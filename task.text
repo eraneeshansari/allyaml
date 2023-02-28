@@ -1,7 +1,7 @@
 Kubernetes Essentials - 
 
 Lab 1: Kubernetes Operations on AWS
-Task 2: Setting up a Kubernetes Cluster
+Task 1: Setting up a Kubernetes Cluster
 
 wget files.cloudthat.training/devops/kubernetes-essentials/kc-install-aws-kops-kv1.17.sh
 bash kc-install-aws-kops-kv1.17.sh
@@ -9,7 +9,27 @@ export KOPS_STATE_STORE=s3://< Your Cluster_Name >
 kops validate cluster
 sudo hostnamectl set-hostname kops
 
+Task 2: 
+Task: Create pod using kubectl command
+
+kubectl run mypod --image=nginx:latest
+#list pods
+kubectl get pods
+
+#ssh/login to that pod
+
+kubectl exec -it mypod -- bash 
+#to comeout of pod run exit command.
+exit
+# to Read pod's log
+kubectl logs mypod
+#Describe pod to see it's configuration
+kubectl describe pod mypod
+
+
 Lab 2: Services in Kubernetes
+
+
 Task 1: Create a Pod using a YAML file
 
 kubectl get nodes
