@@ -29,13 +29,14 @@ kubectl describe pod mypod
 Task 3:
 # multiple container in pods 
 
+vi multi-container.yaml
 
 apiVersion: v1
 kind: Pod
 metadata:
   labels:
     app: myapp
-  name: res-limit-pod
+  name: multi-con-pod
 spec:
   containers:
   - name: con1   ### first container 
@@ -47,8 +48,12 @@ spec:
     ports:
     - containerPort: 8080
 
+# to save file :wq
 
-a. read logs of contaienr
+create pod by using below command 
+kubectl create -f multi-container.yaml
+
+a. read logs of specific contaienr
  kubectl logs multi-con-pod -c con2
 
 b. login into specific container
