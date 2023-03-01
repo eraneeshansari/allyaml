@@ -99,8 +99,22 @@ kubectl get pods --show-labels
 
 Task 2: Setup ClusterIP service
 
-wget https://hpe-content.s3.ap-south-1.amazonaws.com/httpd-svc.yaml
+vi httpd-svc.yaml
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd-svc
+spec:
+  selector:
+    app: myapp
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
+
+# to save :wq
 
 kubectl apply -f httpd-svc.yaml
 kubectl get services
