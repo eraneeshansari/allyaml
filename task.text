@@ -26,6 +26,36 @@ kubectl logs mypod
 #Describe pod to see it's configuration
 kubectl describe pod mypod
 
+Task 3:
+# multiple container in pods 
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: myapp
+  name: res-limit-pod
+spec:
+  containers:
+  - name: con1   ### first container 
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+  - name: con2    ## second container 
+    image: tomcat
+    ports:
+    - containerPort: 8080
+
+
+a. read logs of contaienr
+ kubectl logs multi-con-pod -c con2
+
+b. login into specific container
+kubectl exec -it {pod-name} -c {container-name} -- bash
+kubectl exec -it multi-con-pod -c con1 -- bash
+
+
 
 Lab 2: Services in Kubernetes
 
@@ -323,13 +353,4 @@ kops validate cluster
 kops delete cluster <Your Cluster_Name> --yes
 
 # Verify all the AWS resources are deleted from AWS Console, in case of any confusions, feel free to reach us. 
-
-
-
-
-
-
-
-
-
 
