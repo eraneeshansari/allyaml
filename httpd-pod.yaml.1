@@ -3,7 +3,9 @@ kind: Pod
 metadata:
   name: httpd-pod
   labels:
-    app: myapp
+    env: prod 
+    type: frontend
+    app: httpd-ws
 spec:
   containers:
   - name: httpd-container

@@ -54,12 +54,14 @@ create pod by using below command
 kubectl create -f multi-container.yaml
 
 a. read logs of specific contaienr
+ kubectl logs {pod-name} -c {container-name}
  kubectl logs multi-con-pod -c con2
 
 b. login into specific container
 kubectl exec -it {pod-name} -c {container-name} -- bash
 kubectl exec -it multi-con-pod -c con1 -- bash
 
+to out of container run exit command 
 
 
 Lab 2: Services in Kubernetes
@@ -70,7 +72,23 @@ Task 1: Create a Pod using a YAML file
 kubectl get nodes
 kubectl get nodes -o wide
 
-wget https://hpe-content.s3.ap-south-1.amazonaws.com/httpd-pod.yaml
+vi httpd-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: httpd-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: httpd-container
+    image: httpd
+    ports:
+      - containerPort: 80
+
+# to save file use :wq!
+
 
 kubectl create -f httpd-pod.yaml
 kubectl get pods
@@ -83,6 +101,7 @@ Task 2: Setup ClusterIP service
 
 wget https://hpe-content.s3.ap-south-1.amazonaws.com/httpd-svc.yaml
 
+
 kubectl apply -f httpd-svc.yaml
 kubectl get services
 kubectl describe svc httpd-svc
@@ -93,6 +112,7 @@ Create a pod and login to that pod to execute curl command
 
 kubectl run testpod --image=httpd:latest --port 80
 kubectl exec -it testpod -- bash
+apt update && apt install curl -y
 curl http://httpd-svc
 
 kubectl get nodes -owide | awk '{print $7}'
