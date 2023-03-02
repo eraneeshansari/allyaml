@@ -145,13 +145,10 @@ metadata:
   name: httpd-svc
 spec:
   selector:
-    env: prod 
-    type: frontend
-    app: httpd-ws
+    app: myapp
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
   type: NodePort
 
 # End of file
@@ -162,6 +159,7 @@ kubectl get svc
 kubectl describe svc httpd-svc
 kubectl get nodes -owide | grep node | awk '{print $7}'
 curl http://<Your NODE_EXTERNAL_IP>:<Your NodePort>
+
 
 Task 4: Setup LoadBalancer service
 
@@ -175,13 +173,10 @@ metadata:
   name: httpd-svc
 spec:
   selector:
-    env: prod
-    type: frontend
-    app: httpd-ws
+    app: myapp
   ports:
   - protocol: TCP
     port: 80
-    targetPort: 80
   type: LoadBalancer
 
 
@@ -206,8 +201,44 @@ Task 6: Clean-up
 kubectl delete -f httpd-pod.yaml
 kubectl delete -f httpd-svc.yaml
 
+Task: 6 Resource allocation 
 
-Lab 3: Deployment
+vi resource-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: myapp
+  name: res-limit-pod
+spec:
+  containers:
+  - name: con1
+    image: nginx:latest
+    ports:
+    - containerPort: 80
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "200m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+  - name: con2
+    image: tomcat
+    ports:
+    - containerPort: 8080
+
+#to save file :wq
+
+kubectl get pod
+
+kubectl describe pod res-limit-pod
+
+
+******************
+Lab 3: Deployment*
+******************
 Task 1: Write a Deployment YAML and Apply it
 
 wget https://hpe-content.s3.ap-south-1.amazonaws.com/dep-nginx.yaml
