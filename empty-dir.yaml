@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: emp-vol
+spec:
+  containers:
+    - name: con1
+      image: nginx:latest
+    volumeMounts:
+    - mountPath: /mnt
+      name: myvol
+    - name: con2
+      image: tomcat:latest
+    volumeMounts:
+    - mountPath: /data
+      name: myvol
+  volumes:
+  - name: mylvol
+    emptyDir: {}

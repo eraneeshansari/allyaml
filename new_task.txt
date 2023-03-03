@@ -230,7 +230,7 @@ spec:
     - containerPort: 8080
 
 #to save file :wq
-
+kubectl create -f resource-pod.yaml
 kubectl get pod
 
 kubectl describe pod res-limit-pod
@@ -286,6 +286,9 @@ kubectl get pods
 
 kubectl delete -f dep-nginx.yaml
 
+Task 5: Deployment Auto Scaling HPA - Horizontal Pod Autoscaling
+
+kubectl autoscale deployment nginx-dep --min=3 --max=8 --cpu-percent=70
 
 Lab 4: DaemonSet in Kubernetes
 
@@ -296,60 +299,144 @@ kubectl get ds fluent-ds
 kubectl get pods -o wide
 kubectl delete -f ds-pod.yaml
 
-Lab 5: Persistent Volume in Kubernetes
+************
+*  Volumes *
+************
 
-Task 1: Get Node Label and Create Custom Index.html on Node
 
-kubectl get nodes --show-labels | grep role=node
-kubectl get nodes -o wide | grep node
-ssh admin@< replace selected node_public_IP>
-sudo su
-mkdir /pvdir
-echo Hello World! > /pvdir/index.html
+Lab 5: Empty Dir Volume
+
+vi emp-vol-dep.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emp-vol-dep
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: emp-app
+  template:
+    metadata:
+      labels:
+        app: emp-app
+    spec:
+      containers:
+      - name: con1
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: myvol
+          mountPath: /data
+      - name: con2
+        image: tomcat:latest
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: myvol
+          mountPath: /data
+      volumes:
+      - name: myvol
+        emptyDir: {}
+
+# save file  Press ESc and :wq! to save and exit vi
+kubectl create -f emp-vol-dep.yaml
+kubectl get deployment
+
+
+
+
+Lab 6: Persistent Volume in Kubernetes using storage-class
+Task 1: create pvc persistant volume claim
+
+vi pvc.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myclaim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 2Gi
+
+# save file  Press ESc and :wq! to save and exit vi
+kubectl create -f pvc.yaml
+kubectl exec -it <pod-name> -c con1 -- bash
+cd /mnt
+create a  file
+touch mango.txt
 exit
+
+now login to second container and check you mango file
+
+kubectl exec -it <pod-name> -c con1 -- bash
+cd /data
+ls
+
+
+
+Task 2: Create Pod to use persistent volume claim 
+
+vi pvc-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+  labels:
+     app: myapp
+     env: dev
+spec:
+ containers:
+ - name: con1
+   image: nginx:latest
+   ports:
+   - containerPort: 80
+   volumeMounts:
+   - name: myvol
+     mountPath: /mnt
+ volumes:
+ - name: myvol
+   persistentVolumeClaim:
+      claimName: myclaim
+
+# Press ESc and :wq! to save and exit vi
+
+kubectl apply -f pvc-pod.yaml
+kubectl get pvc
+kubectl exec -it mypod -- bash
+cd /mnt
+create a  file 
+touch mango.txt
 exit
 
-Task 2: Create a Local Persistent Volume
+delete pod 
+kubectl delete -f pvc-pod.yaml
+re-create pod again
+kubectl create -f pvc-pod.yaml
+check your mango.txt file is already there
+kubectl exec -it mypod -- bash
+cd /mnt
+ls
 
-wget https://hpe-content.s3.ap-south-1.amazonaws.com/pv-volume.yaml
-kubectl apply -f pv-volume.yaml
-kubectl get pv 
-
-Task 3: Create a PersistentVolumeClaim
-
-wget https://hpe-content.s3.ap-south-1.amazonaws.com/pv-claim.yaml
-kubectl apply -f pv-claim.yaml
-kubectl get pvc 
-kubectl get pv
-
-Task 4: Create nginx Pod with NodeSelector
-
-wget https://hpe-content.s3.ap-south-1.amazonaws.com/pv-pod.yaml
-
-vi pv-pod.yaml
-# Replace the <Your Node Hostname> with the nodename in which you created index.html. Press ESc and :wq! to save and exit vi
-
-kubectl apply -f pv-pod.yaml
-kubectl get pods -o wide
-kubectl exec -it pv-pod -- /bin/bash 
-apt-get update
-apt-get install curl -y
-curl localhost
-
-kubectl delete -f pv-pod.yaml
-kubectl delete -f pv-claim.yaml
-kubectl delete -f pv-volume.yaml
 
 Lab 6: StatefulSet Implementation
+
 Task 1:  Creating a StatefulSet
 
 wget files.cloudthat.training/devops/kubernetes-essentials/nginx-sts.yaml
 
 kubectl apply -f nginx-sts.yaml
 
-kubectl get service nginx-svc 
-kubectl get statefulset nginx-sts
-kubectl get pods -w -l app=nginx-sts
+kubectl get service 
+kubectl get statefulset 
+kubectl get pods 
 
 for i in 0 1; do kubectl exec "nginx-sts-$i" -- sh -c 'hostname'; done
 
@@ -399,6 +486,9 @@ kubectl get pods
 kubectl describe pod nginx-sts-0 | grep Image
 kubectl delete -f nginx-sts.yaml
 
+
+
+
 Task 5: Clean-up Resources
 
 kubectl delete -f nginx-sts.yaml 
@@ -416,9 +506,10 @@ Task 3: Verify resourcequota Functionality
 wget https://hpe-content.s3.ap-south-1.amazonaws.com/rq-pod.yaml
 
 
-Additional Topic: Installing Helm 3 in Ubuntu Linux and installing wordpress through Helm.
 
-export KOPS_STATE_STORE=s3://< Your Cluster_Name >
+
+
+
 kops validate cluster
 kops delete cluster <Your Cluster_Name> --yes
 
