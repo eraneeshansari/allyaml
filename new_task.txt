@@ -289,6 +289,7 @@ kubectl delete -f dep-nginx.yaml
 Task 5: Deployment Auto Scaling HPA - Horizontal Pod Autoscaling
 
 kubectl autoscale deployment nginx-dep --min=3 --max=8 --cpu-percent=70
+kubectl get hpa
 
 Lab 4: DaemonSet in Kubernetes
 
@@ -346,6 +347,17 @@ kubectl create -f emp-vol-dep.yaml
 kubectl get deployment
 
 
+kubectl exec -it <pod-name> -c con1 -- bash
+cd /data
+create a  file
+touch mango.txt
+exit
+
+now login to second container and check you mango file
+
+kubectl exec -it <pod-name> -c con1 -- bash
+cd /data
+ls
 
 
 Lab 6: Persistent Volume in Kubernetes using storage-class
@@ -367,18 +379,6 @@ spec:
 
 # save file  Press ESc and :wq! to save and exit vi
 kubectl create -f pvc.yaml
-kubectl exec -it <pod-name> -c con1 -- bash
-cd /mnt
-create a  file
-touch mango.txt
-exit
-
-now login to second container and check you mango file
-
-kubectl exec -it <pod-name> -c con1 -- bash
-cd /data
-ls
-
 
 
 Task 2: Create Pod to use persistent volume claim 
