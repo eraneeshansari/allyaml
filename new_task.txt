@@ -698,17 +698,72 @@ kubectl delete -f node-aff-req.yaml
 Lab 7: Namespaces and Resource Quotas in Kubernetes
 
 Task 1: Creating a Namespace
-kubectl create namespace quotas
+kubectl create namespace devops
 kubectl get namespaces 
 
-Task 2: Creating a resourcequota
-wget https://hpe-content.s3.ap-south-1.amazonaws.com/rq-quotas.yaml
 
-Task 3: Verify resourcequota Functionality
-wget https://hpe-content.s3.ap-south-1.amazonaws.com/rq-pod.yaml
+Create Limit range 
+vi limit-range.yaml
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: devops-lr
+  namespace: devops
+spec:
+   limits:
+   - default: # this section defines default limits
+       cpu: 500m
+       memory: 512Mi
+     defaultRequest: # this section defines default requests
+       cpu: 100m
+       memory: 256Mi
+     type: Container
+
+kubectl create -f limit-range.yaml
+
+kubectl describe namespace devops
 
 
+create following pod and see automatic resource is added to your pod 
 
+vi simple-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-pod
+  namespace: devops
+spec:
+  containers:
+  - name: pa-nginx-ctr1
+    image: nginx
+
+kubectl create -f simple-pod.yaml
+
+kubectl describe pod simple-pod -n devops
+
+
+Task 2: resource Quota overall resource allocation on devops namespace 
+
+vi resource-quota.yaml
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: quota
+  namespace: devops
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    services: "4"
+    counts/pods: 10
+
+kubectl create -f resource-quota.yaml
+ kubectl describe namespace devops 
 
 
 

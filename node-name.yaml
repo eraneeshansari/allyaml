@@ -9,5 +9,5 @@ spec:
   - name: nginx
     image: nginx
     imagePullPolicy: IfNotPresent
-  nodeName: ip-172-20-45-33.us-west-1.compute.internal
+  nodeName: ip-172-20-45-34.us-west-1.compute.internal
 
