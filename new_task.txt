@@ -448,7 +448,7 @@ nslookup nginx-sts-1.nginx-svc
 exit
 
 kubectl delete pod -l app=nginx-sts
-kubectl get pod -w -l app=nginx-sts
+kubectl get pod  -l app=nginx-sts
 
 for i in 0 1; do kubectl exec "nginx-sts-$i" -- sh -c 'hostname'; done
 
@@ -481,17 +481,219 @@ kubectl edit sts nginx-sts
 
 # Change the spec: conatiners: image value to nginx:latest, Press Esc and :wq! to exit vi
 
-kubectl get pod -l app=nginx-sts -w
+kubectl get pod -l app=nginx-sts 
 kubectl get pods
 kubectl describe pod nginx-sts-0 | grep Image
 kubectl delete -f nginx-sts.yaml
 
-
-
-
 Task 5: Clean-up Resources
 
-kubectl delete -f nginx-sts.yaml 
+kubectl delete -f nginx-sts.yaml
+
+Task 6: Deploy pod in specific node 
+
+root@ip-172-31-30-120:~/allyamls# kubectl get nodes
+NAME                                          STATUS   ROLES                  AGE   VERSION
+ip-172-20-45-33.us-west-1.compute.internal    Ready    node                   13m   v1.23.16  ## Copy node name and paste in nodeName section in below YAML
+ip-172-20-58-92.us-west-1.compute.internal    Ready    control-plane,master   14m   v1.23.16
+ip-172-20-60-194.us-west-1.compute.internal   Ready    node                   13m   v1.23.16
+
+
+vi node-name.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-nodename
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  nodeName: ip-172-20-45-33.us-west-1.compute.internal
+
+kubectl create -f node-name.yaml
+kubectl get pods -o wide 
+see your pod in defined node
+
+
+
+Task 7:  Deploy pod in selected nodes based on node labels.
+ 
+kubectl get nodes --show-labels
+assign label to any node
+kubectl label node {NODE-NAME}  disktype=ssd
+
+#Find node with your label
+kubectl get nodes --show-labels | grep "disktype=ssd"
+
+vi node-label.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+    disktype: ssd
+
+kubectl create -f node-label.yaml
+kubectl get pods -o wide
+
+Task 8: Pod affinity
+
+vi depend-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pa-nginx-pod1
+  labels:
+    app: pa-nginx-app
+spec:
+  containers:
+  - name: pa-nginx-ctr1
+    image: nginx
+
+kubectl create -f depend-pod.yaml
+kubectl get pods
+
+
+Task 9: pod affinity 
+
+vi pod-affinity.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pa-nginx-pod2
+spec:
+  containers:
+  - name: pa-nginx-ctr2
+    image: nginx
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - pa-nginx-app
+        topologyKey: kubernetes.io/hostname
+
+kubectl create -f depend-pod.yaml
+kubectl get pods
+
+
+
+
+Task 9: Pod Anti Affinity
+
+vi pod-antiaff.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - myapp
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: nginx
+        image: nginx
+
+kubectl create -f  pod-antiaff.yaml
+kubectl get pod -o wide 
+
+
+kubectl delete -f  pod-antiaff.yaml
+
+
+
+Task 10: Node Affinity  
+
+vi node-aff-pref.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: na-nginx-pod1
+spec:
+  containers:
+  - name: na-nginx-ctr1
+    image: nginx
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: disktype
+            operator: In
+            values:
+            - ssd
+
+kubectl create -f  node-aff-pref.yaml.yaml
+kubectl get pod -o wide
+
+
+kubectl delete -f  node-aff-pref.yaml
+
+
+vi node-aff-req.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: na-nginx-pod2
+spec:
+  containers:
+  - name: na-nginx-ctr2
+    image: nginx
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: disktype
+            operator: In
+            values:
+            - ssd
+
+kubectl create -f  node-aff-req.yaml
+kubectl get pod -o wide
+
+
+kubectl delete -f node-aff-req.yaml
+
+
+
 
 Lab 7: Namespaces and Resource Quotas in Kubernetes
 
