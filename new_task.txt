@@ -637,6 +637,8 @@ kubectl delete -f  pod-antiaff.yaml
 
 
 Task 10: Node Affinity  
+to check lables:
+kubectl get nodes --show-labels | grep "disktype"
 
 add label on worker node
 kubectl label nodes {node-name} disktype=ssd
