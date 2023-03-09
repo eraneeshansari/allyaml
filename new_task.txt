@@ -679,7 +679,7 @@ now below required node affinity pod and you will be seeing your pod is in pendi
 after that add following label in  any worker node after labeling nodeyour pod will deploy 
 in that node only.
 
-kubectl label nodes ip-172-20-33-243.us-west-1.compute.internal disktype=cpu
+kubectl label nodes ip-172-20-33-243.us-west-1.compute.internal disktype=ssd
 
 vi node-aff-req.yaml
 
