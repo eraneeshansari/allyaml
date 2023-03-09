@@ -590,8 +590,10 @@ spec:
             - pa-nginx-app
         topologyKey: kubernetes.io/hostname
 
-kubectl create -f depend-pod.yaml
-kubectl get pods
+kubectl create -f pod-affinity.yaml
+
+kubectl get pods -o wide
+both pod are in same node
 
 
 
